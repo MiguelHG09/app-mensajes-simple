@@ -1,0 +1,22 @@
+name: Despliegue Automático en RPi
+
+# Se activa cada vez que alguien hace push a la rama 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    # Le decimos que use el runner que instalamos en tu RPi
+    runs-on: self-hosted
+
+    steps:
+      - name: Actualizar código desde GitHub
+        run: |
+          cd ~/proyectos/app-mensajes-simple/backend
+          git pull origin main
+
+      - name: Reiniciar el servidor con PM2
+        run: |
+          # Usamos PM2 para que el reinicio sea instantáneo y seguro
+          pm2 restart maura-api || pm2 start "venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000" --name maura-api
